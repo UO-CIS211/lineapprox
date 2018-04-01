@@ -29,81 +29,77 @@ Author: FIXME --- your name here
 """
 import math
 
+from typing import List, Tuple, Any
+from numbers import Number
+
 import logging
 logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
-class PolyLine:
-    """A polyline is a sequence of points, represented 
-    as (x,y) tuples.
-
-    PolyLine.points and PolyLine.approx are public, read-only 
-    attributes.  Other attributes are private. 
+class Point(object):
+    """Integer Cartesian coordinates. Immutable.
+    x and y coordinates are public, read-only.
     """
+    pass
 
-    def __init__(self, points):
-        self.points = points
-        self.listeners = [ ]
-        # Initially, the approximated version of the polyline
-        # is the same as the original polyline.  Initially the
-        # approximation accuracy is zero, i.e., the approximate
-        # points are within distance 0 of the original points. 
-        self.approx = points
-        self.tolerance = 0
+class PolyLine(object):
+    """A polyline is a sequence of points.
+    All fields are private.
+    """
+    # Part 1:
+    # FIXME  complete the __init__ method
+    # FIXME  give it a __repr__ method
+    # FIXME  give it __iter__, __len__, __getitem__, __eq__, and append
+    #   by calling corresponding methods in the _points field
 
-    def add_listener(self, listener):
-        self.listeners.append(listener)
+    def __init__(self):
+        self._listeners = [ ]
+        #FIXME it needs another field
 
-    def notify_all(self, event_name, options={}):
-        for listener in self.listeners:
+
+    # ----- List protocol emulation --------
+    # We want the PolyLine object to act like other Python
+    # sequence objects (lists, tuples, etc).  These methods
+    # should act exactly like their counterpoints in class
+    # 'list'.
+    #
+    # FIXME add needed methods
+
+
+    # ---- End of list protocol emulation ---------
+
+    # ---- Connection to graphics in Model-View-Controller (MVC) style;
+    #      We will talk about this in week 2.  Don't change this section
+    #
+
+    def add_listener(self, listener: Any):
+        self._listeners.append(listener)
+
+    # Note: There is a way to declare a useful type for the 'listener' parameter,
+    # but it involves inheritance, which will be introduced in the
+    # next project. For now I've just labeled it an Any, meaning anything.
+
+    def notify_all(self, event_name: str, options={}):
+        for listener in self._listeners:
             listener.notify(event_name, options=options)
 
-    def simplify(self, tolerance):
-        """Approximate the polyline, within a maximum deviation
-        of the specified tolerance distance, with as few points
-        as possible. 
-        """
-        log.debug("Top-level call to simplify")
-        self.tolerance = tolerance 
-        self.approx = [ ]
-        self._dp_simplify(0, len(self.points)-1)
+    # ------ end of MVC ---------
 
-        self.approx.append(self.points[-1])
-        return
+    # FIXME (project part 2):  method 'approximate' goes here
 
-    def _dp_simplify(self, from_index, to_index):
-        """Recursively build up simplified path, working left to 
-        right to add the resulting points to the simplified list. 
-        Generates events 'trial_approx' and 'final_approx_seg' 
-        with options p1=(x,y), p2=(x,y), which may be used by a 
-        view component for animation.
-        """
-        log.debug("dp {}-{} {}-{}"
-                      .format(from_index,to_index,
-                                  self.points[from_index],
-                                  self.points[to_index]))
-        self.notify_all("trial_approx",
-                            options = { "p1": self.points[from_index],
-                                        "p2": self.points[to_index] })
-        self.approx.append(self.points[from_index])
-        log.debug("Returning with simplified = {}".format(self.approx))
         
-def deviation(p1, p2, p):
-    """Shortest distance from point px to a line 
-    that passes through p1 and p2.
-    p1, p2, px represented as (x,y). 
-    """
-    ix, iy = normal_intercept(p1, p2, p)
+def deviation(p1: Point, p2: Point, p: Point) -> float:
+    """Shortest distance from point p to a line through p1,p2"""
+    intercept = normal_intercept(p1, p2, p)
     # Standard distance formula, sqrt((x2-x1)^2 +(y2-y1)^2)
     log.debug("Computing distance from {} to {}"
-                  .format(p, (ix,iy)))
-    px, py = p
-    dx = ix - px
-    dy = iy - py
+                  .format(p, (intercept.x,intercept.y)))
+    dx = intercept.x - p.x
+    dy = intercept.y - p.y
     return math.sqrt(dx*dx + dy*dy)
 
-def normal_intercept(p1, p2, p):
+def normal_intercept(p1: Point, p2: Point, p: Point) -> Point:
     """
     The point at which a line through p1 and p2 
     intersects a normal dropped from p.  See normals.md
@@ -111,30 +107,24 @@ def normal_intercept(p1, p2, p):
     """
     log.debug("Normal intercept {}-{} from {}"
                   .format(p1, p2, p))
-    p1_x, p1_y = p1
-    p2_x, p2_y = p2
-    px, py = p
 
     # Special cases: slope or normal slope is undefined
     # for vertical or horizontal lines, but the intersections
     # are trivial for those cases
-    if p2_x == p1_x:
-        log.debug("Intercept at {}".format((p1_x,py)))
-        return p1_x, py
-    elif p2_y == p1_y:
-        log.debug("Intercept at {}".format((px, p1_y)))
-        return px, p1_y
+    if p2.x == p1.x:
+        log.debug("Intercept at {}".format((p1.x,p.y)))
+        return Point(p1.x, p.y)
+    elif p2.y == p1.y:
+        log.debug("Intercept at {}".format((p.x, p1.y)))
+        return Point(p.x, p1.y)
 
     # The slope of the segment, and of a normal ray
-    seg_slope = (p2_y - p1_y)/(p2_x - p1_x)
+    seg_slope = (p2.y - p1.y)/(p2.x - p1.x)
     normal_slope = 0 - (1.0 / seg_slope)
 
     # For y=mx+b form, we need to solve for b (y intercept)
-    seg_b = p1_y - seg_slope * p1_x
-    normal_b = py - normal_slope * px
-
-    #log.debug("Segment line is y= {} * x + {}".format(seg_slope, seg_b))
-    #log.debug("Normal line is  y= {}  *x + {}".format(normal_slope, normal_b))
+    seg_b = p1.y - seg_slope * p1.x
+    normal_b = p.y - normal_slope * p.x
 
     # Combining and subtracting the two line equations to solve for
     x_intersect = (seg_b - normal_b) / (normal_slope - seg_slope)
@@ -142,8 +132,7 @@ def normal_intercept(p1, p2, p):
     # Colinear points are ok!
 
     log.debug("Intercept at {}".format(x_intersect, y_intersect))
-    return (x_intersect, y_intersect)
-
+    return Point(x_intersect, y_intersect)
 
 
     

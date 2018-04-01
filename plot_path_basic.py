@@ -21,14 +21,11 @@ def cli():
         "csv", type=argparse.FileType('r'),  
         help="Path to CSV file of points")
     parser.add_argument(
-        "width", type=int, default=300, 
+        "width", type=int, default=300, nargs="?",
         help="Window width, in pixels")
     parser.add_argument(
-        "height", type=int, default=300,
+        "height", type=int, default=300, nargs="?",
         help="Window height, in pixels")
-    parser.add_argument(
-        "tolerance", type=int, default=1000,
-        help="Error tolerance in meters")
     args = parser.parse_args()
     return args
 
@@ -62,12 +59,6 @@ if __name__ == "__main__":
                   .format(args.width,args.height))
     view = view_simplify.View(win, path)
     view.plot("blue")
-    input("Press enter to simplify")
-    simpler = path.approximate(args.tolerance)
-    simple_view = view_simplify.View(win, simpler)
-    simple_view.plot("green")
-    print("Simplified from {} points to {} points"
-          .format(len(path._points), len(simpler._points)))
     input("Press enter to dismiss")
     
     
