@@ -1,4 +1,4 @@
-# README
+# Archived
 
 Superseded by https://github.com/UO-CS210/08-Path-Simplifier
 
