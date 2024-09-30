@@ -1,4 +1,13 @@
-# README #
+# README
+
+Superseded by https://github.com/UO-CS210/08-Path-Simplifier
+
+This project is a pretty good exercise in recursive algorithm design, but
+best not mixed with an introduction to classes and methods.  I have therefore
+moved it from the beginning of CS 211 to the end of CS 210, revised
+to work without user-written classes. 
+
+## Overview
 
 Apply Douglas-Peucker line simplification algorithm and display 
 the before and after version. Python 3. 
