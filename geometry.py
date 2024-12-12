@@ -42,6 +42,10 @@ class Point(object):
     x and y coordinates are public, read-only.
     """
     pass
+    # Part 1:
+    # FIXME  give it a __init__ method
+    # FIXME  give it a __repr__ method
+    # FIXME  give it a __eq__ method
 
 class PolyLine(object):
     """A polyline is a sequence of points.
